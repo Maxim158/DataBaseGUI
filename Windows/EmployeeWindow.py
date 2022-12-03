@@ -3,6 +3,8 @@ from kivymd.app import MDApp
 from kivymd.uix.button import MDRaisedButton
 from kivymd.uix.textfield import MDTextField
 from kivymd.uix.floatlayout import FloatLayout
+from kivy.uix.spinner import Spinner
+from kivy.metrics import dp
 import SQL
 
 BTN_SIZE = (.14, .1)
@@ -10,19 +12,23 @@ BTN_SIZE = (.14, .1)
 
 class Employee(MDApp):
 
+
     def build(self):
+
+
         screen = FloatLayout()
 
         pk_list = [el[0] for el in SQL.query(SQL.my_cursor, 'SELECT Employee_ID from employee')]
-        dep_list = [el[0] for el in SQL.query(SQL.my_cursor, 'SELECT Department_ID from department')]
-        print(dep_list)
+        dep_list = [el[0] for el in SQL.query(SQL.my_cursor, 'SELECT Department_name from department')]
+        dep_list_id = [el[0] for el in SQL.query(SQL.my_cursor, 'SELECT Department_ID from department')]
+        dep_dict = {dep_list[i]:dep_list_id[i] for i in range(len(dep_list_id))}
 
         def has_numbers(inputString):
             return any(char.isdigit() for char in inputString)
 
         def validate():
 
-            But2.disabled = Field1.error or Field2.error or Field3.error or \
+            But2.disabled = Field1.error or Field3.error or \
                             Field4.error or Field5.error or Field6.error or Field7.error
             print(f'{But2.disabled} BUTTON')
 
@@ -39,23 +45,13 @@ class Employee(MDApp):
                     Field1.helper_text = 'ID must be INT'
             validate()
 
-        def error_2(instance, value):
-            Field2.error = False
-            try:
-                int(Field2.text)
-                if int(Field2.text) not in dep_list:
-                    Field2.helper_text = 'That Department ID doesnt exist'
-                    Field2.error = True
-            except ValueError:
-                Field2.error = True
-                Field2.helper_text = 'Department ID must be INT'
-            validate()
 
         def error_3(instance, value):
             Field3.error = False
             if has_numbers(Field3.text):
                 Field3.error = True
                 Field3.helper_text = 'Name shouldn\'t contains numbers'
+            if Field3.text == "": Field3.error = True
             validate()
 
         def error_4(instance, value):
@@ -67,6 +63,7 @@ class Employee(MDApp):
 
         def error_6(instance, value):
             Field6.error = False
+            if Field6.text == '': Field6.error = True
             try:
                 float(Field6.text)
             except ValueError:
@@ -76,6 +73,7 @@ class Employee(MDApp):
 
         def error_7(instance, value):
             Field7.error = False
+            if Field7.text == '': Field7.error = True
             try:
                 float(Field7.text)
             except ValueError:
@@ -93,16 +91,12 @@ class Employee(MDApp):
         )
         Field1.bind(focus=error_1)
 
-        Field2 = MDTextField(
-            hint_text="Department ID",
+        Field2 = Spinner(
+            text=dep_list[0],
             pos_hint={"x": 0.05, "y": 0.8},
             size_hint={0.6, 0.05},
-            multiline=False,
-            helper_text_mode='on_error',
-            max_text_length=64,
-            required=True
+            values=dep_list
         )
-        Field2.bind(focus=error_2)
 
         Field3 = MDTextField(
             hint_text="First Name",
@@ -161,7 +155,7 @@ class Employee(MDApp):
         def new(instance):
 
             SQL.query(SQL.my_cursor, f'INSERT INTO employee VALUES ({Field1.text if Field1.text != "" else "null"},'
-                                     f'{Field2.text},\'{Field3.text}\',\'{Field4.text}\','
+                                     f'{dep_dict.get(Field2.text)},\'{Field3.text}\',\'{Field4.text}\','
                                      f'\'{Field5.text}\',{Field6.text},'
                                      f'{Field7.text})')
             SQL.mydb.commit()
