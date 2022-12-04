@@ -17,7 +17,7 @@ from config import *
 from subprocess import Popen, PIPE, STDOUT
 
 # Program credits
-VERSION = '0.3.0'
+VERSION = '0.3.1'
 BTN_SIZE = (.14, .1)
 
 

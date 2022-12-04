@@ -1,6 +1,7 @@
 from kivy.lang import Builder
 from kivymd.app import MDApp
 from kivymd.uix.button import MDRaisedButton
+from kivymd.uix.menu import MDDropdownMenu
 from kivymd.uix.textfield import MDTextField
 from kivymd.uix.floatlayout import FloatLayout
 from kivy.uix.spinner import Spinner
@@ -12,8 +13,19 @@ BTN_SIZE = (.14, .1)
 
 class Employee(MDApp):
 
-
     def build(self):
+
+        def menu_callback_2(text_item):
+            Field2.text = text_item
+            Field2.error = False
+            menu2.dismiss()
+            validate()
+
+        def menu_callback_7(text_item):
+            Field7.text = text_item
+            Field7.error = False
+            menu7.dismiss()
+            validate()
 
 
         screen = FloatLayout()
@@ -24,15 +36,39 @@ class Employee(MDApp):
         war = [el[0] for el in SQL.query(SQL.my_cursor, 'SELECT Warehouse_Name from warehouse')]
         war_id = [el[0] for el in SQL.query(SQL.my_cursor, 'SELECT Warehouse_ID from warehouse')]
 
-        cat_dict = {cat[i]:cat_id[i] for i in range(len(cat_id))}
-        war_dict = {war[i]:war_id[i] for i in range(len(war_id))}
+        cat_dict = {cat[i]: cat_id[i] for i in range(len(cat_id))}
+        war_dict = {war[i]: war_id[i] for i in range(len(war_id))}
+
+        menu_items_2 = [
+            {
+                "text": data,
+                "viewclass": "OneLineListItem",
+                "on_release": lambda x=data: menu_callback_2(x),
+                'height': dp(64)
+            } for data in cat
+        ]
+        menu_items_7 = [
+            {
+                "text": data,
+                "viewclass": "OneLineListItem",
+                "on_release": lambda x=data: menu_callback_7(x),
+                'height': dp(64)
+            } for data in war
+        ]
+
+        def on_focus(inst, value):
+            if value:
+                if inst == Field2:
+                    menu2.open()
+                if inst == Field7:
+                    menu7.open()
 
         def has_numbers(inputString):
             return any(char.isdigit() for char in inputString)
 
         def validate():
 
-            But2.disabled = Field1.error or Field3.error or Field5.error or Field6.error
+            But2.disabled = Field1.error or Field2.error or Field3.error or Field5.error or Field6.error or Field7.error
             print(f'{But2.disabled} BUTTON')
 
         def error_1(instance, value):
@@ -46,8 +82,9 @@ class Employee(MDApp):
                 except ValueError:
                     Field1.error = True
                     Field1.helper_text = 'ID must be INT'
+            else:
+                Field1.error=True
             validate()
-
 
         def error_3(instance, value):
             Field3.error = False
@@ -65,7 +102,8 @@ class Employee(MDApp):
                 except ValueError:
                     Field5.error = True
                     Field5.helper_text = 'Price must be float'
-            else: Field5.error = True
+            else:
+                Field5.error = True
             validate()
 
         def error_6(instance, value):
@@ -89,12 +127,20 @@ class Employee(MDApp):
         )
         Field1.bind(focus=error_1)
 
-        Field2 = Spinner(
-            text=cat[0],
+        Field2 = MDTextField(
+            hint_text="Categories",
             pos_hint={"x": 0.05, "y": 0.8},
             size_hint={0.6, 0.05},
-            values=cat
+            required=True,
+            multiline=False,
+            error=True
         )
+        menu2 = MDDropdownMenu(
+            caller=Field2,
+            items=menu_items_2,
+            width_mult=4
+        )
+        Field2.bind(focus=on_focus)
 
         Field3 = MDTextField(
             hint_text="Product Name",
@@ -131,12 +177,20 @@ class Employee(MDApp):
         )
         Field6.bind(focus=error_6)
 
-        Field7 = Spinner(
-            text=war[0],
+        Field7 = MDTextField(
+            hint_text="Warehouse",
             pos_hint={"x": 0.05, "y": 0.3},
             size_hint={0.6, 0.05},
-            values=war
+            required=True,
+            multiline=False,
+            error=True
         )
+        menu7 = MDDropdownMenu(
+            caller=Field7,
+            items=menu_items_7,
+            width_mult=4
+        )
+        Field7.bind(focus=on_focus)
 
         def close_app(self):
             MDApp.get_running_app().stop()
@@ -150,11 +204,11 @@ class Employee(MDApp):
 
         def new(instance):
             print(f'INSERT INTO product VALUES ({Field1.text},'
-                                     f'{cat_dict.get(Field2.text)},\'{Field3.text}\',\'{Field4.text if Field4.text!="" else "null"}\','
-                                     f'{Field5.text},{Field6.text},'
-                                     f'{war_dict.get(Field7.text)})')
+                  f'{cat_dict.get(Field2.text)},\'{Field3.text}\',\'{Field4.text if Field4.text != "" else "null"}\','
+                  f'{Field5.text},{Field6.text},'
+                  f'{war_dict.get(Field7.text)})')
             SQL.query(SQL.my_cursor, f'INSERT INTO product VALUES ({Field1.text},'
-                                     f'{cat_dict.get(Field2.text)},\'{Field3.text}\',\'{Field4.text if Field4.text!="" else "null"}\','
+                                     f'{cat_dict.get(Field2.text)},\'{Field3.text}\',\'{Field4.text if Field4.text != "" else "null"}\','
                                      f'{Field5.text},{Field6.text},'
                                      f'{war_dict.get(Field7.text)})')
             SQL.mydb.commit()

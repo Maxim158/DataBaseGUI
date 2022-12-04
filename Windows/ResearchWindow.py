@@ -1,7 +1,9 @@
 from kivy.lang import Builder
+from kivy.metrics import dp
 from kivymd.app import MDApp
 from kivymd.uix.button import MDRaisedButton
 from kivy.uix.button import Button
+from kivymd.uix.menu import MDDropdownMenu
 from kivymd.uix.textfield import MDTextField
 from kivymd.uix.floatlayout import FloatLayout
 from kivy.uix.spinner import Spinner
@@ -14,6 +16,13 @@ BTN_SIZE = (.14, .1)
 class Order(MDApp):
 
     def build(self):
+
+        def menu_callback(text_item):
+            Field5.text = text_item
+            Field5.error = False
+            menu.dismiss()
+            validate()
+
         screen = FloatLayout()
 
         pk_list = [el[0] for el in SQL.query(SQL.my_cursor, 'SELECT Research_Name from research')]
@@ -22,12 +31,35 @@ class Order(MDApp):
         status_id = [el[0] for el in SQL.query(SQL.my_cursor, 'SELECT Status_ID from order_status')]
         status_dict = {status[i]: status_id[i] for i in range(len(status_id))}
 
-        def has_numbers(inputString):
-            return any(char.isdigit() for char in inputString)
+        menu_items = [
+            {
+                "text": data,
+                "viewclass": "OneLineListItem",
+                "on_release": lambda x=data: menu_callback(x),
+                'height': dp(64)
+            } for data in status
+        ]
+
+        def save(inst, value, date_range):
+            Field2.text = str(value)
+            Field2.error=False
+            validate()
+
+        def show_date():
+            date_dialog = MDDatePicker(year=2020, month=1, day=1)
+            date_dialog.bind(on_save=save)
+            date_dialog.open()
+
+        def on_focus(inst, value):
+            if value:
+                if inst == Field5:
+                    menu.open()
+                if inst == Field2:
+                    show_date()
 
         def validate():
 
-            But2.disabled = Field1.error or Field3.error or Field4.error
+            But2.disabled = Field1.error or Field3.error or Field4.error or Field2.error or Field5.error
             print(f'{But2.disabled} BUTTON')
 
         def error_1(instance, value):
@@ -68,20 +100,18 @@ class Order(MDApp):
         )
         Field1.bind(focus=error_1)
 
-        def save(inst, value, date_range):
-            Field2.text = str(value)
 
-        def show_date(inst):
-            date_dialog = MDDatePicker(year=2020, month=1, day=1)
-            date_dialog.bind(on_save=save)
-            date_dialog.open()
 
-        Field2 = Button(
-            text='Select Date',
+        Field2 = MDTextField(
+            hint_text='Select Date',
             pos_hint={"x": 0.05, "y": 0.8},
             size_hint={0.6, 0.05},
+            required=True,
+            multiline=False,
+            error=True
         )
-        Field2.bind(on_release=show_date)
+        Field2.bind(focus=on_focus)
+
 
         Field3 = MDTextField(
             hint_text="Synopsis",
@@ -101,12 +131,20 @@ class Order(MDApp):
         )
         Field4.bind(focus=error_4)
 
-        Field5 = Spinner(
-            text=status[0],
+        Field5 = MDTextField(
+            hint_text="Status",
             pos_hint={"x": 0.05, "y": 0.5},
             size_hint={0.6, 0.05},
-            values=status
+            required=True,
+            multiline=False,
+            error=True
         )
+        menu = MDDropdownMenu(
+            caller=Field5,
+            items=menu_items,
+            width_mult=4
+        )
+        Field5.bind(focus=on_focus)
 
         def close_app(self):
             MDApp.get_running_app().stop()

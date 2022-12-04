@@ -5,6 +5,7 @@ from kivymd.uix.textfield import MDTextField
 from kivymd.uix.floatlayout import FloatLayout
 from kivy.uix.spinner import Spinner
 from kivy.metrics import dp
+from kivymd.uix.menu import MDDropdownMenu
 import SQL
 
 BTN_SIZE = (.14, .1)
@@ -12,23 +13,35 @@ BTN_SIZE = (.14, .1)
 
 class Employee(MDApp):
 
-
     def build(self):
 
+        def menu_callback(text_item):
+            Field2.text = text_item
+            Field2.error = False
+            menu.dismiss()
+            validate()
 
         screen = FloatLayout()
 
         pk_list = [el[0] for el in SQL.query(SQL.my_cursor, 'SELECT Employee_ID from employee')]
         dep_list = [el[0] for el in SQL.query(SQL.my_cursor, 'SELECT Department_name from department')]
         dep_list_id = [el[0] for el in SQL.query(SQL.my_cursor, 'SELECT Department_ID from department')]
-        dep_dict = {dep_list[i]:dep_list_id[i] for i in range(len(dep_list_id))}
+        dep_dict = {dep_list[i]: dep_list_id[i] for i in range(len(dep_list_id))}
+        menu_items = [
+            {
+                "text": data,
+                "viewclass": "OneLineListItem",
+                "on_release": lambda x=data: menu_callback(x),
+                'height': dp(64)
+            } for data in dep_list
+        ]
 
         def has_numbers(inputString):
             return any(char.isdigit() for char in inputString)
 
         def validate():
 
-            But2.disabled = Field1.error or Field3.error or \
+            But2.disabled = Field1.error or Field3.error or Field2.error or \
                             Field4.error or Field5.error or Field6.error or Field7.error
             print(f'{But2.disabled} BUTTON')
 
@@ -44,7 +57,6 @@ class Employee(MDApp):
                     Field1.error = True
                     Field1.helper_text = 'ID must be INT'
             validate()
-
 
         def error_3(instance, value):
             Field3.error = False
@@ -91,12 +103,26 @@ class Employee(MDApp):
         )
         Field1.bind(focus=error_1)
 
-        Field2 = Spinner(
-            text=dep_list[0],
+        Field2 = MDTextField(
+            hint_text="Department",
             pos_hint={"x": 0.05, "y": 0.8},
             size_hint={0.6, 0.05},
-            values=dep_list
+            required=True,
+            multiline=False,
+            error=True
         )
+
+        def on_focus(inst, value):
+            if value:
+                menu.open()
+
+        menu = MDDropdownMenu(
+            caller=Field2,
+            items=menu_items,
+            width_mult=4
+        )
+
+        Field2.bind(focus=on_focus)
 
         Field3 = MDTextField(
             hint_text="First Name",

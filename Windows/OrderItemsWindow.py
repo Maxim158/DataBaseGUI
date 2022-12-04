@@ -6,6 +6,8 @@ from kivymd.uix.textfield import MDTextField
 from kivymd.uix.floatlayout import FloatLayout
 from kivy.uix.spinner import Spinner
 from kivymd.uix.pickers import MDDatePicker
+from kivy.metrics import dp
+from kivymd.uix.menu import MDDropdownMenu
 import SQL
 
 BTN_SIZE = (.14, .1)
@@ -14,6 +16,19 @@ BTN_SIZE = (.14, .1)
 class Order(MDApp):
 
     def build(self):
+
+        def menu_callback_2(text_item):
+            Field2.text = text_item
+            Field2.error = False
+            menu2.dismiss()
+            validate()
+
+        def menu_callback_3(text_item):
+            Field3.text = text_item
+            Field3.error = False
+            menu3.dismiss()
+            validate()
+
         screen = FloatLayout()
 
         pk_list = [el[0] for el in SQL.query(SQL.my_cursor, 'SELECT ID from order_items')]
@@ -21,13 +36,33 @@ class Order(MDApp):
         product = [el[0] for el in SQL.query(SQL.my_cursor, 'SELECT Product_Name from product')]
         product_id = [el[0] for el in SQL.query(SQL.my_cursor, 'SELECT Product_ID from product')]
         product_dict = {product[i]: product_id[i] for i in range(len(product_id))}
+        menu_items_2 = [
+            {
+                "text": data,
+                "viewclass": "OneLineListItem",
+                "on_release": lambda x=data: menu_callback_2(x),
+                'height': dp(64)
+            } for data in order
+        ]
+        menu_items_3 = [
+            {
+                "text": data,
+                "viewclass": "OneLineListItem",
+                "on_release": lambda x=data: menu_callback_3(x),
+                'height': dp(64)
+            } for data in product
+        ]
 
-        def has_numbers(inputString):
-            return any(char.isdigit() for char in inputString)
+        def on_focus(inst, value):
+            if value:
+                if inst == Field2:
+                    menu2.open()
+                if inst == Field3:
+                    menu3.open()
 
         def validate():
 
-            But2.disabled = Field1.error or Field4.error
+            But2.disabled = Field1.error or Field2.error or Field3.error or Field4.error
             print(f'{But2.disabled} BUTTON')
 
         def error_1(instance, value):
@@ -68,19 +103,37 @@ class Order(MDApp):
         )
         Field1.bind(focus=error_1)
 
-        Field2 = Spinner(
-            text=order[0],
+        Field2 = MDTextField(
+            hint_text="Order ID",
             pos_hint={"x": 0.05, "y": 0.8},
             size_hint={0.6, 0.05},
-            values=order
+            required=True,
+            multiline=False,
+            error=True
         )
 
-        Field3 = Spinner(
-            text=product[0],
+        menu2 = MDDropdownMenu(
+            caller=Field2,
+            items=menu_items_2,
+            width_mult=4
+        )
+        Field2.bind(focus=on_focus)
+
+        Field3 = MDTextField(
+            hint_text="Product",
             pos_hint={"x": 0.05, "y": 0.7},
             size_hint={0.6, 0.05},
-            values=product
+            required=True,
+            multiline=False,
+            error=True
         )
+
+        menu3 = MDDropdownMenu(
+            caller=Field3,
+            items=menu_items_3,
+            width_mult=4
+        )
+        Field3.bind(focus=on_focus)
 
         Field4 = MDTextField(
             hint_text="Введите количество",
@@ -105,8 +158,8 @@ class Order(MDApp):
         def new(instance):
             print(f'INSERT INTO order_items VALUES ({Field1.text},'
                                      f'{Field2.text},{product_dict.get(Field3.text)},{Field4.text})')
-            SQL.query(SQL.my_cursor, f'INSERT INTO order_items VALUES ({Field1.text},'
-                                     f'{Field2.text},{product_dict.get(Field3.text)},{Field4.text})')
+            SQL.query(SQL.my_cursor, f'INSERT INTO order_items VALUES ({product_dict.get(Field3.text)},'
+                                     f'{Field2.text},{Field4.text},{Field1.text})')
             SQL.mydb.commit()
             MDApp.get_running_app().stop()
 
