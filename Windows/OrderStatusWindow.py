@@ -10,7 +10,7 @@ import SQL
 BTN_SIZE = (.14, .1)
 
 
-class Employee(MDApp):
+class Order(MDApp):
 
 
     def build(self):
@@ -112,4 +112,4 @@ class Employee(MDApp):
 
 
 if __name__ == "__main__":
-    Employee().run()
+    Order().run()

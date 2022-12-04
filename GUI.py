@@ -1,3 +1,5 @@
+import json
+
 from kivy.config import Config
 
 Config.set('graphics', 'width', '1200')
@@ -14,10 +16,10 @@ from kivy.uix.button import Button
 import SQL
 from SQL import *
 from config import *
-from subprocess import Popen, PIPE, STDOUT
+from subprocess import Popen
 
 # Program credits
-VERSION = '0.3.1'
+VERSION = '0.4.0'
 BTN_SIZE = (.14, .1)
 
 
@@ -55,6 +57,20 @@ class MainApp(MDApp):
         'research_employee': "ResEmpWin.py",
         'research_status': "ResStatusWin.py",
         'warehouse': "WarehouseWindow.py",
+    }
+    WinCh = {
+        'counter': "CtrCh.py",
+        'department': "DepCh.py",
+        'employee': "EmpCh.py",
+        'order_data': "DataCh.py",
+        'order_items': "ItemsCh.py",
+        'order_status': "OrSCh.py",
+        'product_categories': "PrCatCh.py",
+        'product': "PrCh.py",
+        'research': "ResCh.py",
+        'research_employee': "ResEmpCh.py",
+        'research_status': "ResStCh.py",
+        'warehouse': "WarCh.py",
     }
 
     def delete_table(self, screen):
@@ -237,11 +253,16 @@ class MainApp(MDApp):
         print(instance_table, current_row)
         # Function for row presses
 
-    def row_checked(self, instance_table, instance_row):
+    def row_checked(self, table, row):
         print('Selected Row')
-        print(instance_table, instance_row)
-        p = Popen('ChangeWin\EmpCh.py', shell=True)
-        p.communicate(instance_row)
+        start_index, end_index = row.table.recycle_data[row.index]["range"]
+        data = str()
+        for i in range(start_index, end_index+1):
+            data = data + (row.table.recycle_data[i]["text"]) + '!'
+        with open('data.txt', 'w') as file:
+            file.write(json.dumps(data))
+        Win = self.WinCh[self.CURRENT_TABLE]
+        p = Popen(f'ChangeWin\{Win}', shell=True)
 
 
 if __name__ == '__main__':

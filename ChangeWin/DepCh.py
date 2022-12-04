@@ -3,30 +3,28 @@ from kivymd.app import MDApp
 from kivymd.uix.button import MDRaisedButton
 from kivymd.uix.textfield import MDTextField
 from kivymd.uix.floatlayout import FloatLayout
-from kivy.uix.spinner import Spinner
-from kivy.metrics import dp
 import SQL
 
 BTN_SIZE = (.14, .1)
 
 
-class ProductCat(MDApp):
-
+class Department(MDApp):
 
     def build(self):
-
-
         screen = FloatLayout()
 
-        pk_list = [el[0] for el in SQL.query(SQL.my_cursor, 'SELECT Category_ID from product_categories')]
+        pk_list = [el[0] for el in SQL.query(SQL.my_cursor, 'SELECT Department_ID from department')]
+        with open('data.txt','r') as file:
+            data = (file.read().replace('\"', '')[:-1].split(sep='!'))
 
-        def has_numbers(inputString):
-            return any(char.isdigit() for char in inputString)
+        print(f'{data}')
 
         def validate():
 
             But2.disabled = Field1.error or Field2.error
+
             print(f'{But2.disabled} BUTTON')
+            print(f'{Field1.error} BUTTON {Field2.error}')
 
         def error_1(instance, value):
             Field1.error = False
@@ -39,42 +37,47 @@ class ProductCat(MDApp):
                 except ValueError:
                     Field1.error = True
                     Field1.helper_text = 'ID must be INT'
+            else: Field1.error = True
             validate()
 
-        def error_2(inst, value):
-            Field2.error= False
-            if Field2.text =="": Field2.error = True
-
-
+        def error_2(instance, value):
+            Field2.error = False
+            if Field2.text == "":
+                Field2.error = True
+            validate()
 
         Field1 = MDTextField(
-            hint_text="Category ID",
+            hint_text="Department ID",
+            text=data[0],
             pos_hint={"x": 0.05, "y": 0.9},
             size_hint={0.6, 0.05},
             multiline=False,
+            required=True,
             helper_text_mode='on_error',
             max_text_length=64,
-            required=True
+            disabled=True
         )
         Field1.bind(focus=error_1)
 
         Field2 = MDTextField(
-            hint_text="Category Name",
+            hint_text="Department Name",
+            text=data[1],
             pos_hint={"x": 0.05, "y": 0.8},
             size_hint={0.6, 0.05},
             multiline=False,
             helper_text_mode='on_error',
             max_text_length=50,
-            required = True
+            required=True
         )
         Field2.bind(focus=error_2)
 
         Field3 = MDTextField(
             hint_text="Description",
+            text=data[2],
             pos_hint={"x": 0.05, "y": 0.7},
             size_hint={0.6, 0.05},
             multiline=False,
-            max_text_length=50,
+            max_text_length=256,
         )
 
         def close_app(self):
@@ -88,19 +91,31 @@ class ProductCat(MDApp):
         )
 
         def new(instance):
-            print(f'INSERT INTO order_status VALUES ({Field1.text},'
-                                     f'\'{Field2.text}\',\'{Field3.text if Field3.text!="" else "null"}\')')
-            SQL.query(SQL.my_cursor, f'INSERT INTO product_categories VALUES ({Field1.text},'
-                                     f'\'{Field2.text}\',\'{Field3.text if Field3.text!="" else "null"}\')')
+            SQL.query(SQL.my_cursor, f'UPDATE department SET '
+                                        f'Department_Name = \'{Field2.text}\','
+                                        f'Description = \'{Field3.text}\''
+                                        f'WHERE department_ID = {Field1.text}')
+            SQL.mydb.commit()
+            MDApp.get_running_app().stop()
+
+        def delete(instance):
+
+            SQL.query(SQL.my_cursor, f'DELETE from department WHERE department_id = {Field1.text}')
             SQL.mydb.commit()
             MDApp.get_running_app().stop()
 
         But2 = MDRaisedButton(
-            text='Добавить',
+            text='Изменить',
             size_hint=BTN_SIZE,
             pos_hint={"x": 0.81, "y": 0.05},
             on_release=new,
-            disabled=True
+        )
+
+        But3 = MDRaisedButton(
+            text='Удалить',
+            size_hint=BTN_SIZE,
+            pos_hint={"x": 0.61, "y": 0.05},
+            on_release=delete,
         )
 
         screen.add_widget(Field1)
@@ -108,8 +123,9 @@ class ProductCat(MDApp):
         screen.add_widget(Field3)
         screen.add_widget(But1)
         screen.add_widget(But2)
+        screen.add_widget(But3)
         return screen
 
 
 if __name__ == "__main__":
-    ProductCat().run()
+    Department().run()

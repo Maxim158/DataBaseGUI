@@ -10,22 +10,22 @@ import SQL
 BTN_SIZE = (.14, .1)
 
 
-class ProductCat(MDApp):
-
+class Warehouse(MDApp):
 
     def build(self):
 
-
         screen = FloatLayout()
 
-        pk_list = [el[0] for el in SQL.query(SQL.my_cursor, 'SELECT Category_ID from product_categories')]
+        pk_list = [el[0] for el in SQL.query(SQL.my_cursor, 'SELECT Warehouse_ID from warehouse')]
 
-        def has_numbers(inputString):
-            return any(char.isdigit() for char in inputString)
+        with open('data.txt', 'r') as file:
+            data = (file.read().replace('\"', '')[:-1].split(sep='!'))
+
+        print(f'{data}')
 
         def validate():
 
-            But2.disabled = Field1.error or Field2.error
+            But2.disabled = Field1.error or Field2.error or Field3.error
             print(f'{But2.disabled} BUTTON')
 
         def error_1(instance, value):
@@ -42,40 +42,50 @@ class ProductCat(MDApp):
             validate()
 
         def error_2(inst, value):
-            Field2.error= False
-            if Field2.text =="": Field2.error = True
+            Field2.error = False
+            if Field2.text == "": Field2.error = True
+            validate()
 
-
+        def error_3(inst, value):
+            Field3.error = False
+            if Field3.text == "": Field3.error = True
+            validate()
 
         Field1 = MDTextField(
-            hint_text="Category ID",
+            hint_text="Warehouse ID",
+            text=data[2],
             pos_hint={"x": 0.05, "y": 0.9},
             size_hint={0.6, 0.05},
             multiline=False,
             helper_text_mode='on_error',
-            max_text_length=64,
-            required=True
+            max_text_length=18,
+            required=True,
+            disabled=True
         )
         Field1.bind(focus=error_1)
 
         Field2 = MDTextField(
-            hint_text="Category Name",
+            hint_text="Warehouse Name",
+            text=data[0],
             pos_hint={"x": 0.05, "y": 0.8},
             size_hint={0.6, 0.05},
             multiline=False,
             helper_text_mode='on_error',
-            max_text_length=50,
-            required = True
+            max_text_length=20,
+            required=True
         )
         Field2.bind(focus=error_2)
 
         Field3 = MDTextField(
-            hint_text="Description",
+            hint_text="Location",
+            text=data[1],
             pos_hint={"x": 0.05, "y": 0.7},
             size_hint={0.6, 0.05},
             multiline=False,
             max_text_length=50,
+            required=True
         )
+        Field3.bind(focus=error_3)
 
         def close_app(self):
             MDApp.get_running_app().stop()
@@ -87,20 +97,32 @@ class ProductCat(MDApp):
             on_release=close_app
         )
 
+        def delete(instance):
+
+            SQL.query(SQL.my_cursor, f'DELETE from warehouse WHERE Warehouse_ID = {Field1.text}')
+            SQL.mydb.commit()
+            MDApp.get_running_app().stop()
+
         def new(instance):
-            print(f'INSERT INTO order_status VALUES ({Field1.text},'
-                                     f'\'{Field2.text}\',\'{Field3.text if Field3.text!="" else "null"}\')')
-            SQL.query(SQL.my_cursor, f'INSERT INTO product_categories VALUES ({Field1.text},'
-                                     f'\'{Field2.text}\',\'{Field3.text if Field3.text!="" else "null"}\')')
+            SQL.query(SQL.my_cursor, f'UPDATE warehouse SET '
+                                     f'Warehouse_Name = \'{Field2.text}\','
+                                     f'Location = \'{Field3.text}\''
+                                     f' WHERE Warehouse_ID = {Field1.text}')
             SQL.mydb.commit()
             MDApp.get_running_app().stop()
 
         But2 = MDRaisedButton(
-            text='Добавить',
+            text='Изменить',
             size_hint=BTN_SIZE,
             pos_hint={"x": 0.81, "y": 0.05},
             on_release=new,
-            disabled=True
+        )
+
+        But3 = MDRaisedButton(
+            text='Удалить',
+            size_hint=BTN_SIZE,
+            pos_hint={"x": 0.61, "y": 0.05},
+            on_release=delete,
         )
 
         screen.add_widget(Field1)
@@ -108,8 +130,9 @@ class ProductCat(MDApp):
         screen.add_widget(Field3)
         screen.add_widget(But1)
         screen.add_widget(But2)
+        screen.add_widget(But3)
         return screen
 
 
 if __name__ == "__main__":
-    ProductCat().run()
+    Warehouse().run()

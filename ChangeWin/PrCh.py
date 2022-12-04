@@ -27,8 +27,10 @@ class Product(MDApp):
             menu7.dismiss()
             validate()
 
-
         screen = FloatLayout()
+
+        with open('data.txt', 'r') as file:
+            data = (file.read().replace('\"', '')[:-1].split(sep='!'))
 
         pk_list = [el[0] for el in SQL.query(SQL.my_cursor, 'SELECT Product_ID from product')]
         cat = [el[0] for el in SQL.query(SQL.my_cursor, 'SELECT Category_Name from product_categories')]
@@ -83,7 +85,7 @@ class Product(MDApp):
                     Field1.error = True
                     Field1.helper_text = 'ID must be INT'
             else:
-                Field1.error=True
+                Field1.error = True
             validate()
 
         def error_3(instance, value):
@@ -118,22 +120,25 @@ class Product(MDApp):
 
         Field1 = MDTextField(
             hint_text="Product ID",
+            text=data[0],
             pos_hint={"x": 0.05, "y": 0.9},
             size_hint={0.6, 0.05},
             multiline=False,
             helper_text_mode='on_error',
             max_text_length=64,
-            required=True
+            required=True,
+            disabled=True
         )
         Field1.bind(focus=error_1)
 
+        f2 = [k for k, v in cat_dict.items() if v == int(data[1])]
         Field2 = MDTextField(
             hint_text="Categories",
+            text=f2[0],
             pos_hint={"x": 0.05, "y": 0.8},
             size_hint={0.6, 0.05},
             required=True,
             multiline=False,
-            error=True
         )
         menu2 = MDDropdownMenu(
             caller=Field2,
@@ -144,6 +149,7 @@ class Product(MDApp):
 
         Field3 = MDTextField(
             hint_text="Product Name",
+            text=data[2],
             pos_hint={"x": 0.05, "y": 0.7},
             size_hint={0.6, 0.05},
             multiline=False,
@@ -154,6 +160,7 @@ class Product(MDApp):
 
         Field4 = MDTextField(
             hint_text="Description",
+            text=data[3],
             pos_hint={"x": 0.05, "y": 0.6},
             size_hint={0.6, 0.05},
             multiline=False,
@@ -162,14 +169,17 @@ class Product(MDApp):
 
         Field5 = MDTextField(
             hint_text="List Price",
+            text=data[4],
             pos_hint={"x": 0.05, "y": 0.5},
             size_hint={0.6, 0.05},
             multiline=False,
             required=True
         )
         Field5.bind(focus=error_5)
+
         Field6 = MDTextField(
             hint_text="Quantity",
+            text=data[5],
             pos_hint={"x": 0.05, "y": 0.4},
             size_hint={0.6, 0.05},
             multiline=False,
@@ -177,13 +187,14 @@ class Product(MDApp):
         )
         Field6.bind(focus=error_6)
 
+        f7 = [k for k, v in war_dict.items() if v == int(data[6])]
         Field7 = MDTextField(
             hint_text="Warehouse",
+            text=f7[0],
             pos_hint={"x": 0.05, "y": 0.3},
             size_hint={0.6, 0.05},
             required=True,
             multiline=False,
-            error=True
         )
         menu7 = MDDropdownMenu(
             caller=Field7,
@@ -202,24 +213,36 @@ class Product(MDApp):
             on_release=close_app
         )
 
+        def delete(instance):
+
+            SQL.query(SQL.my_cursor, f'DELETE from product WHERE Product_ID = {Field1.text}')
+            SQL.mydb.commit()
+            MDApp.get_running_app().stop()
+
         def new(instance):
-            print(f'INSERT INTO product VALUES ({Field1.text},'
-                  f'{cat_dict.get(Field2.text)},\'{Field3.text}\',\'{Field4.text if Field4.text != "" else "null"}\','
-                  f'{Field5.text},{Field6.text},'
-                  f'{war_dict.get(Field7.text)})')
-            SQL.query(SQL.my_cursor, f'INSERT INTO product VALUES ({Field1.text},'
-                                     f'{cat_dict.get(Field2.text)},\'{Field3.text}\',\'{Field4.text if Field4.text != "" else "null"}\','
-                                     f'{Field5.text},{Field6.text},'
-                                     f'{war_dict.get(Field7.text)})')
+            SQL.query(SQL.my_cursor, f'UPDATE product SET '
+                                     f'Category_ID = {cat_dict.get(Field2.text)},'
+                                     f'Product_Name = \'{Field3.text}\','
+                                     f'Description = \'{Field4.text if Field4.text != "" else "null"}\','
+                                     f'List_Price = {Field5.text},'
+                                     f'Quantity = {Field6.text},'
+                                     f'Warehouse_ID = {war_dict.get(Field7.text)}'
+                                     f' WHERE Product_ID = {Field1.text}')
             SQL.mydb.commit()
             MDApp.get_running_app().stop()
 
         But2 = MDRaisedButton(
-            text='Добавить',
+            text='Изменить',
             size_hint=BTN_SIZE,
             pos_hint={"x": 0.81, "y": 0.05},
             on_release=new,
-            disabled=True
+        )
+
+        But3 = MDRaisedButton(
+            text='Удалить',
+            size_hint=BTN_SIZE,
+            pos_hint={"x": 0.61, "y": 0.05},
+            on_release=delete,
         )
 
         screen.add_widget(Field1)
@@ -231,6 +254,7 @@ class Product(MDApp):
         screen.add_widget(Field7)
         screen.add_widget(But1)
         screen.add_widget(But2)
+        screen.add_widget(But3)
         return screen
 
 

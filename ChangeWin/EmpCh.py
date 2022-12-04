@@ -1,3 +1,5 @@
+import json
+
 from kivy.lang import Builder
 from kivymd.app import MDApp
 from kivymd.uix.button import MDRaisedButton
@@ -12,7 +14,10 @@ class Employee(MDApp):
 
     def build(self):
         screen = FloatLayout()
+        with open('data.txt','r') as file:
+            data = (file.read().replace('\"', '')[:-1].split(sep='!'))
 
+        print(f'{data}')
         pk_list = [el[0] for el in SQL.query(SQL.my_cursor, 'SELECT Employee_ID from employee')]
         dep_list = [el[0] for el in SQL.query(SQL.my_cursor, 'SELECT Department_ID from department')]
         print(dep_list)
@@ -85,16 +90,19 @@ class Employee(MDApp):
 
         Field1 = MDTextField(
             hint_text="Employee ID (Есть функция автоувеличения)",
+            text=data[0],
             pos_hint={"x": 0.05, "y": 0.9},
             size_hint={0.6, 0.05},
             multiline=False,
             helper_text_mode='on_error',
             max_text_length=64,
+            disabled=True
         )
         Field1.bind(focus=error_1)
 
         Field2 = MDTextField(
             hint_text="Department ID",
+            text=data[1],
             pos_hint={"x": 0.05, "y": 0.8},
             size_hint={0.6, 0.05},
             multiline=False,
@@ -106,6 +114,7 @@ class Employee(MDApp):
 
         Field3 = MDTextField(
             hint_text="First Name",
+            text=data[2],
             pos_hint={"x": 0.05, "y": 0.7},
             size_hint={0.6, 0.05},
             multiline=False,
@@ -116,6 +125,7 @@ class Employee(MDApp):
 
         Field4 = MDTextField(
             hint_text="Last Name",
+            text=data[3],
             pos_hint={"x": 0.05, "y": 0.6},
             size_hint={0.6, 0.05},
             multiline=False,
@@ -125,6 +135,7 @@ class Employee(MDApp):
 
         Field5 = MDTextField(
             hint_text="Phone Number",
+            text=data[4],
             pos_hint={"x": 0.05, "y": 0.5},
             size_hint={0.6, 0.05},
             multiline=False,
@@ -132,6 +143,7 @@ class Employee(MDApp):
 
         Field6 = MDTextField(
             hint_text="Balance",
+            text=data[5],
             pos_hint={"x": 0.05, "y": 0.4},
             size_hint={0.6, 0.05},
             multiline=False,
@@ -141,6 +153,7 @@ class Employee(MDApp):
 
         Field7 = MDTextField(
             hint_text="Salaray",
+            text=data[6],
             pos_hint={"x": 0.05, "y": 0.3},
             size_hint={0.6, 0.05},
             multiline=False,
@@ -159,20 +172,37 @@ class Employee(MDApp):
         )
 
         def new(instance):
-            pass
-            # SQL.query(SQL.my_cursor, f'INSERT INTO employee VALUES ({Field1.text if Field1.text != "" else "null"},'
-            #                          f'{Field2.text},\'{Field3.text}\',\'{Field4.text}\','
-            #                          f'\'{Field5.text}\',{Field6.text},'
-            #                          f'{Field7.text})')
-            # SQL.mydb.commit()
-            # MDApp.get_running_app().stop()
+            print()
+            SQL.query(SQL.my_cursor, f'UPDATE employee SET '
+                                     f'Department_ID = {Field2.text},'
+                                     f'First_Name = \'{Field3.text}\','
+                                     f'Last_Name = \'{Field4.text}\','
+                                     f'Phone_Number = \'{Field5.text}\','
+                                     f'Balance = {Field6.text},'
+                                     f'Salary = {Field7.text}'
+                                     f'WHERE employee_ID = {Field1.text}')
+            SQL.mydb.commit()
+            MDApp.get_running_app().stop()
+
+        def delete(instance):
+
+            SQL.query(SQL.my_cursor, f'DELETE from employee WHERE employee_id = {Field1.text}')
+            SQL.mydb.commit()
+            MDApp.get_running_app().stop()
+
 
         But2 = MDRaisedButton(
             text='Изменить',
             size_hint=BTN_SIZE,
             pos_hint={"x": 0.81, "y": 0.05},
             on_release=new,
-            disabled=True
+        )
+
+        But3 = MDRaisedButton(
+            text='Удалить',
+            size_hint=BTN_SIZE,
+            pos_hint={"x": 0.61, "y": 0.05},
+            on_release=delete,
         )
 
         screen.add_widget(Field1)
@@ -184,6 +214,7 @@ class Employee(MDApp):
         screen.add_widget(Field7)
         screen.add_widget(But1)
         screen.add_widget(But2)
+        screen.add_widget(But3)
         return screen
 
 

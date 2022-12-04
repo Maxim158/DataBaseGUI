@@ -25,6 +25,11 @@ class Research(MDApp):
 
         screen = FloatLayout()
 
+        with open('data.txt', 'r') as file:
+            data = (file.read().replace('\"', '')[:-1].split(sep='!'))
+
+        print(f'{data}')
+
         pk_list = [el[0] for el in SQL.query(SQL.my_cursor, 'SELECT Research_Name from research')]
 
         status = [el[0] for el in SQL.query(SQL.my_cursor, 'SELECT Status_Name from order_status')]
@@ -42,7 +47,7 @@ class Research(MDApp):
 
         def save(inst, value, date_range):
             Field2.text = str(value)
-            Field2.error=False
+            Field2.error = False
             validate()
 
         def show_date():
@@ -91,30 +96,30 @@ class Research(MDApp):
 
         Field1 = MDTextField(
             hint_text="Research Name",
+            text=data[0],
             pos_hint={"x": 0.05, "y": 0.9},
             size_hint={0.6, 0.05},
             multiline=False,
             required=True,
             helper_text_mode='on_error',
             max_text_length=200,
+            disabled=True
         )
         Field1.bind(focus=error_1)
 
-
-
         Field2 = MDTextField(
             hint_text='Select Date',
+            text=data[1],
             pos_hint={"x": 0.05, "y": 0.8},
             size_hint={0.6, 0.05},
             required=True,
             multiline=False,
-            error=True
         )
         Field2.bind(focus=on_focus)
 
-
         Field3 = MDTextField(
             hint_text="Synopsis",
+            text=data[2],
             pos_hint={"x": 0.05, "y": 0.7},
             size_hint={0.6, 0.05},
             required=True,
@@ -124,6 +129,7 @@ class Research(MDApp):
 
         Field4 = MDTextField(
             hint_text='Budget',
+            text=data[3],
             pos_hint={"x": 0.05, "y": 0.6},
             size_hint={0.6, 0.05},
             required=True,
@@ -131,13 +137,14 @@ class Research(MDApp):
         )
         Field4.bind(focus=error_4)
 
+        f5 = [k for k, v in status_dict.items() if v == data[4]]
         Field5 = MDTextField(
             hint_text="Status",
+            text=f5[0],
             pos_hint={"x": 0.05, "y": 0.5},
             size_hint={0.6, 0.05},
             required=True,
             multiline=False,
-            error=True
         )
         menu = MDDropdownMenu(
             caller=Field5,
@@ -156,22 +163,40 @@ class Research(MDApp):
             on_release=close_app
         )
 
+        def delete(instance):
+
+            SQL.query(SQL.my_cursor, f'DELETE from research WHERE Research_Name = \'{Field1.text}\'')
+            SQL.mydb.commit()
+            MDApp.get_running_app().stop()
+
         def new(instance):
-            print(f'INSERT INTO research VALUES (\'{Field1.text}\','
-                                     f'\'{Field2.text}\',\'{Field3.text}\',{Field4.text},'
-                                     f'{status_dict.get(Field5.text)})')
-            SQL.query(SQL.my_cursor, f'INSERT INTO research VALUES (\'{Field1.text}\','
-                                     f'\'{Field2.text}\',\'{Field3.text}\',{Field4.text},'
-                                     f'{status_dict.get(Field5.text)})')
+            print(f'UPDATE research SET '
+                                     f'Date = \'{Field2.text}\','
+                                     f'Synopsis = \'{Field3.text}\','
+                                     f'Budget = {Field4.text},'
+                                     f'Status_ID = {status_dict.get(Field5.text)}'
+                                     f' WHERE Research_Name = {Field1.text}')
+            SQL.query(SQL.my_cursor, f'UPDATE research SET '
+                                     f'Date = \'{Field2.text}\','
+                                     f'Synopsis = \'{Field3.text}\','
+                                     f'Budget = {Field4.text},'
+                                     f'Status_ID = {status_dict.get(Field5.text)}'
+                                     f' WHERE Research_Name = \'{Field1.text}\'')
             SQL.mydb.commit()
             MDApp.get_running_app().stop()
 
         But2 = MDRaisedButton(
-            text='Добавить',
+            text='Изменить',
             size_hint=BTN_SIZE,
             pos_hint={"x": 0.81, "y": 0.05},
             on_release=new,
-            disabled=True
+        )
+
+        But3 = MDRaisedButton(
+            text='Удалить',
+            size_hint=BTN_SIZE,
+            pos_hint={"x": 0.61, "y": 0.05},
+            on_release=delete,
         )
 
         screen.add_widget(Field1)
@@ -181,6 +206,7 @@ class Research(MDApp):
         screen.add_widget(Field5)
         screen.add_widget(But1)
         screen.add_widget(But2)
+        screen.add_widget(But3)
         return screen
 
 

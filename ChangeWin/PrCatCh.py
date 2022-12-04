@@ -12,16 +12,14 @@ BTN_SIZE = (.14, .1)
 
 class ProductCat(MDApp):
 
-
     def build(self):
-
 
         screen = FloatLayout()
 
         pk_list = [el[0] for el in SQL.query(SQL.my_cursor, 'SELECT Category_ID from product_categories')]
 
-        def has_numbers(inputString):
-            return any(char.isdigit() for char in inputString)
+        with open('data.txt','r') as file:
+            data = (file.read().replace('\"', '')[:-1].split(sep='!'))
 
         def validate():
 
@@ -42,35 +40,37 @@ class ProductCat(MDApp):
             validate()
 
         def error_2(inst, value):
-            Field2.error= False
-            if Field2.text =="": Field2.error = True
-
-
+            Field2.error = False
+            if Field2.text == "": Field2.error = True
 
         Field1 = MDTextField(
             hint_text="Category ID",
+            text=data[0],
             pos_hint={"x": 0.05, "y": 0.9},
             size_hint={0.6, 0.05},
             multiline=False,
             helper_text_mode='on_error',
             max_text_length=64,
-            required=True
+            required=True,
+            disabled=True
         )
         Field1.bind(focus=error_1)
 
         Field2 = MDTextField(
             hint_text="Category Name",
+            text=data[1],
             pos_hint={"x": 0.05, "y": 0.8},
             size_hint={0.6, 0.05},
             multiline=False,
             helper_text_mode='on_error',
             max_text_length=50,
-            required = True
+            required=True
         )
         Field2.bind(focus=error_2)
 
         Field3 = MDTextField(
             hint_text="Description",
+            text=data[2],
             pos_hint={"x": 0.05, "y": 0.7},
             size_hint={0.6, 0.05},
             multiline=False,
@@ -87,20 +87,32 @@ class ProductCat(MDApp):
             on_release=close_app
         )
 
+        def delete(instance):
+
+            SQL.query(SQL.my_cursor, f'DELETE from Product_categories WHERE Category_ID = {Field1.text}')
+            SQL.mydb.commit()
+            MDApp.get_running_app().stop()
+
         def new(instance):
-            print(f'INSERT INTO order_status VALUES ({Field1.text},'
-                                     f'\'{Field2.text}\',\'{Field3.text if Field3.text!="" else "null"}\')')
-            SQL.query(SQL.my_cursor, f'INSERT INTO product_categories VALUES ({Field1.text},'
-                                     f'\'{Field2.text}\',\'{Field3.text if Field3.text!="" else "null"}\')')
+            SQL.query(SQL.my_cursor, f'UPDATE Product_categories SET '
+                                     f'Category_Name = \'{Field2.text}\','
+                                     f'Description = \'{Field3.text}\''
+                                     f' WHERE Category_ID = {Field1.text}')
             SQL.mydb.commit()
             MDApp.get_running_app().stop()
 
         But2 = MDRaisedButton(
-            text='Добавить',
+            text='Изменить',
             size_hint=BTN_SIZE,
             pos_hint={"x": 0.81, "y": 0.05},
             on_release=new,
-            disabled=True
+        )
+
+        But3 = MDRaisedButton(
+            text='Удалить',
+            size_hint=BTN_SIZE,
+            pos_hint={"x": 0.61, "y": 0.05},
+            on_release=delete,
         )
 
         screen.add_widget(Field1)
@@ -108,6 +120,7 @@ class ProductCat(MDApp):
         screen.add_widget(Field3)
         screen.add_widget(But1)
         screen.add_widget(But2)
+        screen.add_widget(But3)
         return screen
 
 
