@@ -1,8 +1,10 @@
 import json
 
 from kivy.lang import Builder
+from kivy.metrics import dp
 from kivymd.app import MDApp
 from kivymd.uix.button import MDRaisedButton
+from kivymd.uix.menu import MDDropdownMenu
 from kivymd.uix.textfield import MDTextField
 from kivymd.uix.floatlayout import FloatLayout
 import SQL
@@ -14,16 +16,37 @@ class Employee(MDApp):
 
     def build(self):
         screen = FloatLayout()
+
+        def menu_callback(text_item):
+            Field2.text = text_item
+            Field2.error = False
+            menu.dismiss()
+            validate()
+
         with open('data.txt','r') as file:
             data = (file.read().replace('\"', '')[:-1].split(sep='!'))
 
         print(f'{data}')
-        pk_list = [el[0] for el in SQL.query(SQL.my_cursor, 'SELECT Employee_ID from employee')]
-        dep_list = [el[0] for el in SQL.query(SQL.my_cursor, 'SELECT Department_ID from department')]
+        pk_list = [el[0] for el in SQL.query('SELECT Employee_ID from employee')]
+        dep_list = [el[0] for el in SQL.query('SELECT Department_Name from department')]
+        dep_list_id = [el[0] for el in SQL.query('SELECT Department_ID from department')]
+        dep_dict = {dep_list[i]: dep_list_id[i] for i in range(len(dep_list_id))}
+        menu_items = [
+            {
+                "text": data,
+                "viewclass": "OneLineListItem",
+                "on_release": lambda x=data: menu_callback(x),
+                'height': dp(64)
+            } for data in dep_list
+        ]
         print(dep_list)
 
         def has_numbers(inputString):
             return any(char.isdigit() for char in inputString)
+
+        def on_focus(inst, value):
+            if value:
+                menu.open()
 
         def validate():
 
@@ -42,18 +65,6 @@ class Employee(MDApp):
                 except ValueError:
                     Field1.error = True
                     Field1.helper_text = 'ID must be INT'
-            validate()
-
-        def error_2(instance, value):
-            Field2.error = False
-            try:
-                int(Field2.text)
-                if int(Field2.text) not in dep_list:
-                    Field2.helper_text = 'That Department ID doesnt exist'
-                    Field2.error = True
-            except ValueError:
-                Field2.error = True
-                Field2.helper_text = 'Department ID must be INT'
             validate()
 
         def error_3(instance, value):
@@ -100,9 +111,10 @@ class Employee(MDApp):
         )
         Field1.bind(focus=error_1)
 
+        f2= [k for k, v in dep_dict.items() if v == int(data[1])]
         Field2 = MDTextField(
             hint_text="Department ID",
-            text=data[1],
+            text=f2[0],
             pos_hint={"x": 0.05, "y": 0.8},
             size_hint={0.6, 0.05},
             multiline=False,
@@ -110,7 +122,13 @@ class Employee(MDApp):
             max_text_length=64,
             required=True
         )
-        Field2.bind(focus=error_2)
+        menu = MDDropdownMenu(
+            caller=Field2,
+            items=menu_items,
+            width_mult=4
+        )
+
+        Field2.bind(focus=on_focus)
 
         Field3 = MDTextField(
             hint_text="First Name",
@@ -173,21 +191,21 @@ class Employee(MDApp):
 
         def new(instance):
             print()
-            SQL.query(SQL.my_cursor, f'UPDATE employee SET '
-                                     f'Department_ID = {Field2.text},'
+            SQL.query(f'UPDATE employee SET '
+                                     f'Department_ID = {dep_dict.get(Field2.text)},'
                                      f'First_Name = \'{Field3.text}\','
                                      f'Last_Name = \'{Field4.text}\','
                                      f'Phone_Number = \'{Field5.text}\','
                                      f'Balance = {Field6.text},'
                                      f'Salary = {Field7.text}'
                                      f'WHERE employee_ID = {Field1.text}')
-            SQL.mydb.commit()
+            
             MDApp.get_running_app().stop()
 
         def delete(instance):
 
-            SQL.query(SQL.my_cursor, f'DELETE from employee WHERE employee_id = {Field1.text}')
-            SQL.mydb.commit()
+            SQL.query(f'DELETE from employee WHERE employee_id = {Field1.text}')
+            
             MDApp.get_running_app().stop()
 
 

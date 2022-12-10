@@ -13,8 +13,8 @@ class Department(MDApp):
     def build(self):
         screen = FloatLayout()
 
-        pk_list = [el[0] for el in SQL.query(SQL.my_cursor, 'SELECT Department_ID from department')]
-        with open('data.txt','r') as file:
+        pk_list = [el[0] for el in SQL.query('SELECT Department_ID from department')]
+        with open('data.txt', 'r') as file:
             data = (file.read().replace('\"', '')[:-1].split(sep='!'))
 
         print(f'{data}')
@@ -37,7 +37,8 @@ class Department(MDApp):
                 except ValueError:
                     Field1.error = True
                     Field1.helper_text = 'ID must be INT'
-            else: Field1.error = True
+            else:
+                Field1.error = True
             validate()
 
         def error_2(instance, value):
@@ -91,17 +92,17 @@ class Department(MDApp):
         )
 
         def new(instance):
-            SQL.query(SQL.my_cursor, f'UPDATE department SET '
-                                        f'Department_Name = \'{Field2.text}\','
-                                        f'Description = \'{Field3.text}\''
-                                        f'WHERE department_ID = {Field1.text}')
-            SQL.mydb.commit()
+            SQL.query(f'UPDATE department SET '
+                      f'Department_Name = \'{Field2.text}\','
+                      f'Description = \'{Field3.text}\''
+                      f'WHERE department_ID = {Field1.text}')
+            
             MDApp.get_running_app().stop()
 
         def delete(instance):
 
-            SQL.query(SQL.my_cursor, f'DELETE from department WHERE department_id = {Field1.text}')
-            SQL.mydb.commit()
+            SQL.query(f'DELETE from department WHERE department_id = {Field1.text}')
+            
             MDApp.get_running_app().stop()
 
         But2 = MDRaisedButton(

@@ -19,7 +19,7 @@ from config import *
 from subprocess import Popen
 
 # Program credits
-VERSION = '0.4.0'
+VERSION = '0.5.0'
 BTN_SIZE = (.14, .1)
 
 
@@ -90,8 +90,8 @@ class MainApp(MDApp):
             pos_hint={'center_x': 0.5, 'center_y': 0.5},
             size_hint=(.9, 0.6),
             use_pagination=True,
-            column_data=get_columns(SQL.query(my_cursor, describe + MAIN_TABLE)),
-            row_data=get_rows(SQL.query(my_cursor, select_all + MAIN_TABLE)),
+            column_data=get_columns(SQL.query(describe + MAIN_TABLE)),
+            row_data=get_rows(SQL.query(select_all + MAIN_TABLE)),
         )
 
         table.bind(on_check_press=self.checked)
@@ -108,7 +108,7 @@ class MainApp(MDApp):
                      on_press=Adding)
 
         def find(instance):
-            if SortingList.text != "Выберите ряд":
+            if SortingList.text != "Выберите поле" and self.CURRENT_TABLE != "Procedure":
                 self.SEEKING = Input.text
                 print('Find')
                 self.delete_table(screen)
@@ -120,8 +120,8 @@ class MainApp(MDApp):
                     pos_hint={'center_x': 0.5, 'center_y': 0.5},
                     size_hint=(.9, 0.6),
                     use_pagination=True,
-                    column_data=get_columns(SQL.query(my_cursor, describe + self.CURRENT_TABLE)),
-                    row_data=get_rows(SQL.query(my_cursor, where if self.EXACTLY else like))
+                    column_data=get_columns(SQL.query(describe + self.CURRENT_TABLE)),
+                    row_data=get_rows(SQL.query(where if self.EXACTLY else like))
                 )
                 table.bind(on_check_press=self.checked)
                 table.bind(on_row_press=self.row_checked)
@@ -133,14 +133,14 @@ class MainApp(MDApp):
                       on_press=find)
 
         TablesList = Spinner(text=MAIN_TABLE,
-                             values=tuple(el[0] for el in query(my_cursor, "show tables")),
+                             values=tuple(el[0] for el in query("show tables")),
                              size_hint=BTN_SIZE,
                              background_color=[144 / 255, 212 / 255, 107 / 255, 0.7],
                              pos_hint={'x': 0.025, 'y': 0.85})
 
-        SortingList = Spinner(text="Выберите ряд",
+        SortingList = Spinner(text="Выберите поле",
                               values=tuple(
-                                  el[0] for el in get_columns(query(my_cursor, describe + self.CURRENT_TABLE))),
+                                  el[0] for el in get_columns(query(describe + self.CURRENT_TABLE))),
                               size_hint=BTN_SIZE,
                               background_color=[144 / 255, 212 / 255, 107 / 255, 0.7],
                               pos_hint={'x': 0.85, 'y': 0.85}
@@ -166,28 +166,20 @@ class MainApp(MDApp):
         exact.bind(active=on_check)
         exact_label = MDLabel(
             text="Точное совпадение",
-            size_hint=(.1, .05),
+            size_hint=(.08, .05),
             pos_hint={'x': 0.62, 'y': 0.91}
         )
 
         def update(instance):
             self.delete_table(screen)
-            newdb = mysql.connector.Connect(
-                host=host,
-                port=3306,
-                user=user,
-                password=password,
-                db=db_name
-            )
-            newcur = newdb.cursor()
             table = MDDataTable(
                 pos_hint={'center_x': 0.5, 'center_y': 0.5},
                 size_hint=(.9, 0.6),
                 use_pagination=True,
-                column_data=get_columns(SQL.query(newcur, describe + self.CURRENT_TABLE)),
-                row_data=get_rows(SQL.query(newcur, select_all + self.CURRENT_TABLE))
+                column_data=get_columns(SQL.query(describe + self.CURRENT_TABLE)),
+                row_data=get_rows(SQL.query(select_all + self.CURRENT_TABLE))
             )
-            get_data = SQL.query(my_cursor, f'SELECT * FROM employee')
+            get_data = SQL.query(f'SELECT * FROM employee')
             for i in range(len(get_data)):
                 print(get_data[i])
             table.bind(on_check_press=self.checked)
@@ -199,6 +191,31 @@ class MainApp(MDApp):
                         pos_hint={'x': 0.85, 'y': 0.025},
                         background_color=[0, 0, 1, .5],
                         on_press=update)
+
+        def procedure(inst):
+            qr = SQL.query("call GetSalaryDetail")
+            self.CURRENT_TABLE = "Procedure"
+            self.delete_table(screen)
+            SortingList.text = "Выберите поле"
+            table = MDDataTable(
+                pos_hint={'center_x': 0.5, 'center_y': 0.5},
+                size_hint=(.9, 0.6),
+                use_pagination=True,
+                column_data=[
+                    ("Name", dp(64)),
+                    ("LEVEL", dp(64)),
+                ],
+                row_data=get_rows(qr)
+            )
+            table.bind(on_check_press=self.checked)
+            table.bind(on_row_press=self.row_checked)
+            SortingList.values = tuple(["Name", "LEVEL"])
+            screen.add_widget(table)
+
+        proc = Button(text='Процедура',
+                        size_hint=BTN_SIZE,
+                        pos_hint={'x': 0.25, 'y': 0.025},
+                        on_press=procedure)
 
         def on_focus(instance, value):
             if value:
@@ -212,17 +229,17 @@ class MainApp(MDApp):
             self.CURRENT_TABLE = TablesList.text
             print('Change Table', spinner, 'has text', text)
             self.delete_table(screen)
-            SortingList.text = "Выберите ряд"
+            SortingList.text = "Выберите поле"
             table = MDDataTable(
                 pos_hint={'center_x': 0.5, 'center_y': 0.5},
                 size_hint=(.9, 0.6),
                 use_pagination=True,
-                column_data=get_columns(SQL.query(my_cursor, describe + self.CURRENT_TABLE)),
-                row_data=get_rows(SQL.query(my_cursor, select_all + self.CURRENT_TABLE))
+                column_data=get_columns(SQL.query(describe + self.CURRENT_TABLE)),
+                row_data=get_rows(SQL.query(select_all + self.CURRENT_TABLE))
             )
             table.bind(on_check_press=self.checked)
             table.bind(on_row_press=self.row_checked)
-            SortingList.values = tuple(el[0] for el in get_columns(query(my_cursor, describe + self.CURRENT_TABLE)))
+            SortingList.values = tuple(el[0] for el in get_columns(query(describe + self.CURRENT_TABLE)))
             screen.add_widget(table)
 
         def sorting_row(spinner, text):
@@ -237,6 +254,7 @@ class MainApp(MDApp):
                           pos_hint={'x': 0.92, 'y': -0.49})
 
         screen.add_widget(TablesList)
+        screen.add_widget(proc)
         screen.add_widget(table)
         screen.add_widget(Add)
         screen.add_widget(Sort)
@@ -257,7 +275,7 @@ class MainApp(MDApp):
         print('Selected Row')
         start_index, end_index = row.table.recycle_data[row.index]["range"]
         data = str()
-        for i in range(start_index, end_index+1):
+        for i in range(start_index, end_index + 1):
             data = data + (row.table.recycle_data[i]["text"]) + '!'
         with open('data.txt', 'w') as file:
             file.write(json.dumps(data))

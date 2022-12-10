@@ -30,10 +30,10 @@ class Research(MDApp):
 
         print(f'{data}')
 
-        pk_list = [el[0] for el in SQL.query(SQL.my_cursor, 'SELECT Research_Name from research')]
+        pk_list = [el[0] for el in SQL.query('SELECT Research_Name from research')]
 
-        status = [el[0] for el in SQL.query(SQL.my_cursor, 'SELECT Status_Name from order_status')]
-        status_id = [el[0] for el in SQL.query(SQL.my_cursor, 'SELECT Status_ID from order_status')]
+        status = [el[0] for el in SQL.query('SELECT Status_Name from order_status')]
+        status_id = [el[0] for el in SQL.query('SELECT Status_ID from order_status')]
         status_dict = {status[i]: status_id[i] for i in range(len(status_id))}
 
         menu_items = [
@@ -165,8 +165,8 @@ class Research(MDApp):
 
         def delete(instance):
 
-            SQL.query(SQL.my_cursor, f'DELETE from research WHERE Research_Name = \'{Field1.text}\'')
-            SQL.mydb.commit()
+            SQL.query(f'DELETE from research WHERE Research_Name = \'{Field1.text}\'')
+            
             MDApp.get_running_app().stop()
 
         def new(instance):
@@ -176,13 +176,13 @@ class Research(MDApp):
                                      f'Budget = {Field4.text},'
                                      f'Status_ID = {status_dict.get(Field5.text)}'
                                      f' WHERE Research_Name = {Field1.text}')
-            SQL.query(SQL.my_cursor, f'UPDATE research SET '
+            SQL.query(f'UPDATE research SET '
                                      f'Date = \'{Field2.text}\','
                                      f'Synopsis = \'{Field3.text}\','
                                      f'Budget = {Field4.text},'
                                      f'Status_ID = {status_dict.get(Field5.text)}'
                                      f' WHERE Research_Name = \'{Field1.text}\'')
-            SQL.mydb.commit()
+            
             MDApp.get_running_app().stop()
 
         But2 = MDRaisedButton(

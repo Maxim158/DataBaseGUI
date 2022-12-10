@@ -36,10 +36,10 @@ class Order(MDApp):
 
         print(f'{data}')
 
-        pk_list = [el[0] for el in SQL.query(SQL.my_cursor, 'SELECT ID from order_items')]
-        order = [str(el[0]) for el in SQL.query(SQL.my_cursor, 'SELECT Order_ID from order_data')]
-        product = [el[0] for el in SQL.query(SQL.my_cursor, 'SELECT Product_Name from product')]
-        product_id = [el[0] for el in SQL.query(SQL.my_cursor, 'SELECT Product_ID from product')]
+        pk_list = [el[0] for el in SQL.query('SELECT ID from order_items')]
+        order = [str(el[0]) for el in SQL.query('SELECT Order_ID from order_data')]
+        product = [el[0] for el in SQL.query('SELECT Product_Name from product')]
+        product_id = [el[0] for el in SQL.query('SELECT Product_ID from product')]
         product_dict = {product[i]: product_id[i] for i in range(len(product_id))}
         menu_items_2 = [
             {
@@ -166,17 +166,17 @@ class Order(MDApp):
 
         def delete(instance):
 
-            SQL.query(SQL.my_cursor, f'DELETE from order_items WHERE ID = {Field1.text}')
-            SQL.mydb.commit()
+            SQL.query(f'DELETE from order_items WHERE ID = {Field1.text}')
+            
             MDApp.get_running_app().stop()
 
         def new(instance):
-            SQL.query(SQL.my_cursor, f'UPDATE order_items SET '
+            SQL.query(f'UPDATE order_items SET '
                                      f'ORDER_ID = {Field2.text},'
                                      f'PRODUCT_ID = {product_dict.get(Field3.text)},'
                                      f'Quantity = {Field4.text} '
                                      f'WHERE ID = {Field1.text}')
-            SQL.mydb.commit()
+            
             MDApp.get_running_app().stop()
 
         But2 = MDRaisedButton(

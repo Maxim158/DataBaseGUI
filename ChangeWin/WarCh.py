@@ -16,7 +16,7 @@ class Warehouse(MDApp):
 
         screen = FloatLayout()
 
-        pk_list = [el[0] for el in SQL.query(SQL.my_cursor, 'SELECT Warehouse_ID from warehouse')]
+        pk_list = [el[0] for el in SQL.query('SELECT Warehouse_ID from warehouse')]
 
         with open('data.txt', 'r') as file:
             data = (file.read().replace('\"', '')[:-1].split(sep='!'))
@@ -99,16 +99,16 @@ class Warehouse(MDApp):
 
         def delete(instance):
 
-            SQL.query(SQL.my_cursor, f'DELETE from warehouse WHERE Warehouse_ID = {Field1.text}')
-            SQL.mydb.commit()
+            SQL.query(f'DELETE from warehouse WHERE Warehouse_ID = {Field1.text}')
+            
             MDApp.get_running_app().stop()
 
         def new(instance):
-            SQL.query(SQL.my_cursor, f'UPDATE warehouse SET '
+            SQL.query(f'UPDATE warehouse SET '
                                      f'Warehouse_Name = \'{Field2.text}\','
                                      f'Location = \'{Field3.text}\''
                                      f' WHERE Warehouse_ID = {Field1.text}')
-            SQL.mydb.commit()
+            
             MDApp.get_running_app().stop()
 
         But2 = MDRaisedButton(

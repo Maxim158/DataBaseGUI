@@ -20,12 +20,12 @@ class ResEmp(MDApp):
         with open('data.txt', 'r') as file:
             data = (file.read().replace('\"', '')[:-1].split(sep='!'))
 
-        res_in = [el[0] for el in SQL.query(SQL.my_cursor, 'SELECT Research_Name from research_employee')]
-        emp_id_in = [el[0] for el in SQL.query(SQL.my_cursor, 'SELECT employee_ID from research_employee')]
+        res_in = [el[0] for el in SQL.query('SELECT Research_Name from research_employee')]
+        emp_id_in = [el[0] for el in SQL.query('SELECT employee_ID from research_employee')]
         pairs = [[res_in[i], emp_id_in[i]] for i in range(len(res_in))]
         print(pairs)
-        emp_id = [el[0] for el in SQL.query(SQL.my_cursor, 'SELECT employee_ID from employee')]
-        emp = [el[0] + ' ' + el[1] for el in SQL.query(SQL.my_cursor, 'SELECT First_Name,Last_Name from employee')]
+        emp_id = [el[0] for el in SQL.query('SELECT employee_ID from employee')]
+        emp = [el[0] + ' ' + el[1] for el in SQL.query('SELECT First_Name,Last_Name from employee')]
         emp_dict = {emp[i]: emp_id[i] for i in range(len(emp_id))}
 
         Field1 = MDTextField(
@@ -65,7 +65,7 @@ class ResEmp(MDApp):
             SQL.query(SQL.my_cursor,
                       f'DELETE from research_employee WHERE Research_Name = \'{Field1.text}\' '
                       f'and Employee_ID = {emp_dict.get(Field2.text)}')
-            SQL.mydb.commit()
+            
             MDApp.get_running_app().stop()
 
         But2 = MDRaisedButton(

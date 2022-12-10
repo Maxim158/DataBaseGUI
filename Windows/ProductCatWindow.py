@@ -18,7 +18,7 @@ class ProductCat(MDApp):
 
         screen = FloatLayout()
 
-        pk_list = [el[0] for el in SQL.query(SQL.my_cursor, 'SELECT Category_ID from product_categories')]
+        pk_list = [el[0] for el in SQL.query('SELECT Category_ID from product_categories')]
 
         def has_numbers(inputString):
             return any(char.isdigit() for char in inputString)
@@ -90,9 +90,8 @@ class ProductCat(MDApp):
         def new(instance):
             print(f'INSERT INTO order_status VALUES ({Field1.text},'
                                      f'\'{Field2.text}\',\'{Field3.text if Field3.text!="" else "null"}\')')
-            SQL.query(SQL.my_cursor, f'INSERT INTO product_categories VALUES ({Field1.text},'
+            SQL.query(f'INSERT INTO product_categories VALUES ({Field1.text},'
                                      f'\'{Field2.text}\',\'{Field3.text if Field3.text!="" else "null"}\')')
-            SQL.mydb.commit()
             MDApp.get_running_app().stop()
 
         But2 = MDRaisedButton(

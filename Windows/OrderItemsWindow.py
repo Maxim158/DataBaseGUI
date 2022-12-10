@@ -31,10 +31,10 @@ class Order(MDApp):
 
         screen = FloatLayout()
 
-        pk_list = [el[0] for el in SQL.query(SQL.my_cursor, 'SELECT ID from order_items')]
-        order = [str(el[0]) for el in SQL.query(SQL.my_cursor, 'SELECT Order_ID from order_data')]
-        product = [el[0] for el in SQL.query(SQL.my_cursor, 'SELECT Product_Name from product')]
-        product_id = [el[0] for el in SQL.query(SQL.my_cursor, 'SELECT Product_ID from product')]
+        pk_list = [el[0] for el in SQL.query('SELECT ID from order_items')]
+        order = [str(el[0]) for el in SQL.query('SELECT Order_ID from order_data')]
+        product = [el[0] for el in SQL.query('SELECT Product_Name from product')]
+        product_id = [el[0] for el in SQL.query('SELECT Product_ID from product')]
         product_dict = {product[i]: product_id[i] for i in range(len(product_id))}
         menu_items_2 = [
             {
@@ -158,9 +158,8 @@ class Order(MDApp):
         def new(instance):
             print(f'INSERT INTO order_items VALUES ({Field1.text},'
                                      f'{Field2.text},{product_dict.get(Field3.text)},{Field4.text})')
-            SQL.query(SQL.my_cursor, f'INSERT INTO order_items VALUES ({product_dict.get(Field3.text)},'
+            SQL.query(f'INSERT INTO order_items VALUES ({product_dict.get(Field3.text)},'
                                      f'{Field2.text},{Field4.text},{Field1.text})')
-            SQL.mydb.commit()
             MDApp.get_running_app().stop()
 
         But2 = MDRaisedButton(

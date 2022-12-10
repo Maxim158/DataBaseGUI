@@ -18,7 +18,7 @@ class Warehouse(MDApp):
 
         screen = FloatLayout()
 
-        pk_list = [el[0] for el in SQL.query(SQL.my_cursor, 'SELECT Warehouse_ID from warehouse')]
+        pk_list = [el[0] for el in SQL.query('SELECT Warehouse_ID from warehouse')]
 
         def has_numbers(inputString):
             return any(char.isdigit() for char in inputString)
@@ -97,9 +97,8 @@ class Warehouse(MDApp):
         def new(instance):
             print(f'INSERT INTO warehouse VALUES (\'{Field2.text}\','
                                      f'\'{Field3.text}\',{Field1.text})')
-            SQL.query(SQL.my_cursor, f'INSERT INTO warehouse VALUES (\'{Field2.text}\','
+            SQL.query(f'INSERT INTO warehouse VALUES (\'{Field2.text}\','
                                      f'\'{Field3.text}\',{Field1.text})')
-            SQL.mydb.commit()
             MDApp.get_running_app().stop()
 
         But2 = MDRaisedButton(

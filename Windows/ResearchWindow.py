@@ -25,10 +25,10 @@ class Research(MDApp):
 
         screen = FloatLayout()
 
-        pk_list = [el[0] for el in SQL.query(SQL.my_cursor, 'SELECT Research_Name from research')]
+        pk_list = [el[0] for el in SQL.query('SELECT Research_Name from research')]
 
-        status = [el[0] for el in SQL.query(SQL.my_cursor, 'SELECT Status_Name from order_status')]
-        status_id = [el[0] for el in SQL.query(SQL.my_cursor, 'SELECT Status_ID from order_status')]
+        status = [el[0] for el in SQL.query('SELECT Status_Name from order_status')]
+        status_id = [el[0] for el in SQL.query('SELECT Status_ID from order_status')]
         status_dict = {status[i]: status_id[i] for i in range(len(status_id))}
 
         menu_items = [
@@ -160,10 +160,9 @@ class Research(MDApp):
             print(f'INSERT INTO research VALUES (\'{Field1.text}\','
                                      f'\'{Field2.text}\',\'{Field3.text}\',{Field4.text},'
                                      f'{status_dict.get(Field5.text)})')
-            SQL.query(SQL.my_cursor, f'INSERT INTO research VALUES (\'{Field1.text}\','
+            SQL.query(f'INSERT INTO research VALUES (\'{Field1.text}\','
                                      f'\'{Field2.text}\',\'{Field3.text}\',{Field4.text},'
                                      f'{status_dict.get(Field5.text)})')
-            SQL.mydb.commit()
             MDApp.get_running_app().stop()
 
         But2 = MDRaisedButton(

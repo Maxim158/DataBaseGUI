@@ -18,7 +18,7 @@ class ResStatus(MDApp):
 
         screen = FloatLayout()
 
-        pk_list = [el[0] for el in SQL.query(SQL.my_cursor, 'SELECT Status_ID from research_status')]
+        pk_list = [el[0] for el in SQL.query('SELECT Status_ID from research_status')]
 
         def has_numbers(inputString):
             return any(char.isdigit() for char in inputString)
@@ -91,9 +91,8 @@ class ResStatus(MDApp):
         def new(instance):
             print(f'INSERT INTO research_status VALUES ({Field1.text},'
                                      f'\'{Field2.text}\',\'{Field3.text if Field3.text!="" else "null"}\')')
-            SQL.query(SQL.my_cursor, f'INSERT INTO research_status VALUES ({Field1.text},'
+            SQL.query(f'INSERT INTO research_status VALUES ({Field1.text},'
                                      f'\'{Field2.text}\',\'{Field3.text if Field3.text!="" else "null"}\')')
-            SQL.mydb.commit()
             MDApp.get_running_app().stop()
 
         But2 = MDRaisedButton(

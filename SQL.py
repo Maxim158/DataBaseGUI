@@ -2,18 +2,8 @@ import mysql.connector
 
 from config import host, user, password, db_name
 
-mydb = mysql.connector.Connect(
-    host=host,
-    port=3306,
-    user=user,
-    password=password,
-    db=db_name
-)
 
-my_cursor = mydb.cursor()
-
-
-def update_bd():
+def query(data):
     mydb = mysql.connector.Connect(
         host=host,
         port=3306,
@@ -22,14 +12,18 @@ def update_bd():
         db=db_name
     )
 
+    my_cursor = mydb.cursor()
 
-def query(cursor, data):
-    cursor.execute(data)
-    result = cursor.fetchall()
+    my_cursor.execute(data)
+    result = my_cursor.fetchall()
+    if data.split()[0] in ('INSERT', 'DELETE'):
+        mydb.commit()
+    my_cursor.close()
+    mydb.close()
     return result
 
 
 if __name__ == '__main__':
-    res = (query(my_cursor, "show tables"))
+    res = (query("show tables"))
     print(res)
     newRes = tuple(el[0] for el in res)

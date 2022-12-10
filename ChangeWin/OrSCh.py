@@ -16,7 +16,7 @@ class Order(MDApp):
 
         screen = FloatLayout()
 
-        pk_list = [el[0] for el in SQL.query(SQL.my_cursor, 'SELECT Status_ID from order_status')]
+        pk_list = [el[0] for el in SQL.query('SELECT Status_ID from order_status')]
         with open('data.txt','r') as file:
             data = (file.read().replace('\"', '')[:-1].split(sep='!'))
 
@@ -89,16 +89,16 @@ class Order(MDApp):
 
         def delete(instance):
 
-            SQL.query(SQL.my_cursor, f'DELETE from order_status WHERE Status_ID = {Field1.text}')
-            SQL.mydb.commit()
+            SQL.query(f'DELETE from order_status WHERE Status_ID = {Field1.text}')
+            
             MDApp.get_running_app().stop()
 
         def new(instance):
-            SQL.query(SQL.my_cursor, f'UPDATE order_status SET '
+            SQL.query(f'UPDATE order_status SET '
                                      f'Status_Name = \'{Field2.text}\','
                                      f'Description = \'{Field3.text}\''
                                      f' WHERE Status_ID = {Field1.text}')
-            SQL.mydb.commit()
+            
             MDApp.get_running_app().stop()
 
         But2 = MDRaisedButton(

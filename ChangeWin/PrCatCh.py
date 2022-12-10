@@ -16,7 +16,7 @@ class ProductCat(MDApp):
 
         screen = FloatLayout()
 
-        pk_list = [el[0] for el in SQL.query(SQL.my_cursor, 'SELECT Category_ID from product_categories')]
+        pk_list = [el[0] for el in SQL.query('SELECT Category_ID from product_categories')]
 
         with open('data.txt','r') as file:
             data = (file.read().replace('\"', '')[:-1].split(sep='!'))
@@ -89,16 +89,16 @@ class ProductCat(MDApp):
 
         def delete(instance):
 
-            SQL.query(SQL.my_cursor, f'DELETE from Product_categories WHERE Category_ID = {Field1.text}')
-            SQL.mydb.commit()
+            SQL.query(f'DELETE from Product_categories WHERE Category_ID = {Field1.text}')
+            
             MDApp.get_running_app().stop()
 
         def new(instance):
-            SQL.query(SQL.my_cursor, f'UPDATE Product_categories SET '
+            SQL.query(f'UPDATE Product_categories SET '
                                      f'Category_Name = \'{Field2.text}\','
                                      f'Description = \'{Field3.text}\''
                                      f' WHERE Category_ID = {Field1.text}')
-            SQL.mydb.commit()
+            
             MDApp.get_running_app().stop()
 
         But2 = MDRaisedButton(

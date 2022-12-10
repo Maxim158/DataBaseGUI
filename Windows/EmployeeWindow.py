@@ -23,9 +23,9 @@ class Employee(MDApp):
 
         screen = FloatLayout()
 
-        pk_list = [el[0] for el in SQL.query(SQL.my_cursor, 'SELECT Employee_ID from employee')]
-        dep_list = [el[0] for el in SQL.query(SQL.my_cursor, 'SELECT Department_name from department')]
-        dep_list_id = [el[0] for el in SQL.query(SQL.my_cursor, 'SELECT Department_ID from department')]
+        pk_list = [el[0] for el in SQL.query('SELECT Employee_ID from employee')]
+        dep_list = [el[0] for el in SQL.query('SELECT Department_name from department')]
+        dep_list_id = [el[0] for el in SQL.query('SELECT Department_ID from department')]
         dep_dict = {dep_list[i]: dep_list_id[i] for i in range(len(dep_list_id))}
         menu_items = [
             {
@@ -180,11 +180,10 @@ class Employee(MDApp):
 
         def new(instance):
 
-            SQL.query(SQL.my_cursor, f'INSERT INTO employee VALUES ({Field1.text if Field1.text != "" else "null"},'
+            SQL.query(f'INSERT INTO employee VALUES ({Field1.text if Field1.text != "" else "null"},'
                                      f'{dep_dict.get(Field2.text)},\'{Field3.text}\',\'{Field4.text}\','
                                      f'\'{Field5.text}\',{Field6.text},'
                                      f'{Field7.text})')
-            SQL.mydb.commit()
             MDApp.get_running_app().stop()
 
         But2 = MDRaisedButton(

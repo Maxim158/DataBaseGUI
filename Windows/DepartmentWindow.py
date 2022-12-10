@@ -13,7 +13,7 @@ class Department(MDApp):
     def build(self):
         screen = FloatLayout()
 
-        pk_list = [el[0] for el in SQL.query(SQL.my_cursor, 'SELECT Department_ID from department')]
+        pk_list = [el[0] for el in SQL.query('SELECT Department_ID from department')]
 
         def has_numbers(inputString):
             return any(char.isdigit() for char in inputString)
@@ -88,9 +88,8 @@ class Department(MDApp):
         def new(instance):
             print(f'INSERT INTO department VALUES ({Field1.text}, {Field2.text},'
                                      f' {Field3.text if Field3.text != "" else "null"})')
-            SQL.query(SQL.my_cursor, f'INSERT INTO department VALUES ({Field1.text}, \'{Field2.text}\','
+            SQL.query(f'INSERT INTO department VALUES ({Field1.text}, \'{Field2.text}\','
                                      f' {Field3.text if Field3.text != "" else "null"})')
-            SQL.mydb.commit()
             MDApp.get_running_app().stop()
 
         But2 = MDRaisedButton(

@@ -20,7 +20,7 @@ class Employee(MDApp):
 
         screen = FloatLayout()
 
-        res = [el[0] for el in SQL.query(SQL.my_cursor, 'SELECT Research_Name from research')]
+        res = [el[0] for el in SQL.query('SELECT Research_Name from research')]
         menu_items = [
             {
                 "text": data,

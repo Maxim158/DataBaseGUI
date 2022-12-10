@@ -32,11 +32,11 @@ class Product(MDApp):
         with open('data.txt', 'r') as file:
             data = (file.read().replace('\"', '')[:-1].split(sep='!'))
 
-        pk_list = [el[0] for el in SQL.query(SQL.my_cursor, 'SELECT Product_ID from product')]
-        cat = [el[0] for el in SQL.query(SQL.my_cursor, 'SELECT Category_Name from product_categories')]
-        cat_id = [el[0] for el in SQL.query(SQL.my_cursor, 'SELECT Category_ID from product_categories')]
-        war = [el[0] for el in SQL.query(SQL.my_cursor, 'SELECT Warehouse_Name from warehouse')]
-        war_id = [el[0] for el in SQL.query(SQL.my_cursor, 'SELECT Warehouse_ID from warehouse')]
+        pk_list = [el[0] for el in SQL.query('SELECT Product_ID from product')]
+        cat = [el[0] for el in SQL.query('SELECT Category_Name from product_categories')]
+        cat_id = [el[0] for el in SQL.query('SELECT Category_ID from product_categories')]
+        war = [el[0] for el in SQL.query('SELECT Warehouse_Name from warehouse')]
+        war_id = [el[0] for el in SQL.query('SELECT Warehouse_ID from warehouse')]
 
         cat_dict = {cat[i]: cat_id[i] for i in range(len(cat_id))}
         war_dict = {war[i]: war_id[i] for i in range(len(war_id))}
@@ -215,12 +215,12 @@ class Product(MDApp):
 
         def delete(instance):
 
-            SQL.query(SQL.my_cursor, f'DELETE from product WHERE Product_ID = {Field1.text}')
-            SQL.mydb.commit()
+            SQL.query(f'DELETE from product WHERE Product_ID = {Field1.text}')
+            
             MDApp.get_running_app().stop()
 
         def new(instance):
-            SQL.query(SQL.my_cursor, f'UPDATE product SET '
+            SQL.query(f'UPDATE product SET '
                                      f'Category_ID = {cat_dict.get(Field2.text)},'
                                      f'Product_Name = \'{Field3.text}\','
                                      f'Description = \'{Field4.text if Field4.text != "" else "null"}\','
@@ -228,7 +228,7 @@ class Product(MDApp):
                                      f'Quantity = {Field6.text},'
                                      f'Warehouse_ID = {war_dict.get(Field7.text)}'
                                      f' WHERE Product_ID = {Field1.text}')
-            SQL.mydb.commit()
+            
             MDApp.get_running_app().stop()
 
         But2 = MDRaisedButton(

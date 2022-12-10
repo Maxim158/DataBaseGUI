@@ -14,7 +14,6 @@ BTN_SIZE = (.14, .1)
 
 class ResEmp(MDApp):
 
-
     def build(self):
 
         def menu_callback_1(text_item):
@@ -31,15 +30,14 @@ class ResEmp(MDApp):
 
         screen = FloatLayout()
 
-
-        res = [el[0] for el in SQL.query(SQL.my_cursor, 'SELECT Research_Name from research')]
-        res_in = [el[0] for el in SQL.query(SQL.my_cursor, 'SELECT Research_Name from research_employee')]
-        emp_id_in = [el[0] for el in SQL.query(SQL.my_cursor, 'SELECT employee_ID from research_employee')]
-        pairs = [[res_in[i],emp_id_in[i]] for i in range(len(res_in))]
+        res = [el[0] for el in SQL.query('SELECT Research_Name from research')]
+        res_in = [el[0] for el in SQL.query('SELECT Research_Name from research_employee')]
+        emp_id_in = [el[0] for el in SQL.query('SELECT employee_ID from research_employee')]
+        pairs = [[res_in[i], emp_id_in[i]] for i in range(len(res_in))]
         print(pairs)
-        emp_id = [el[0] for el in SQL.query(SQL.my_cursor, 'SELECT employee_ID from employee')]
-        emp = [el[0]+' '+el[1] for el in SQL.query(SQL.my_cursor, 'SELECT First_Name,Last_Name from employee')]
-        emp_dict = {emp[i]:emp_id[i] for i in range(len(emp_id))}
+        emp_id = [el[0] for el in SQL.query('SELECT employee_ID from employee')]
+        emp = [el[0] + ' ' + el[1] for el in SQL.query('SELECT First_Name,Last_Name from employee')]
+        emp_dict = {emp[i]: emp_id[i] for i in range(len(emp_id))}
         print(emp_dict)
         menu_items_1 = [
             {
@@ -68,15 +66,14 @@ class ResEmp(MDApp):
         def validate():
 
             if Field1.text != '' and Field2.text != "":
-                But2.disabled =Field1.error or Field2.error or [Field1.text, emp_dict.get(Field2.text)] in pairs
+                But2.disabled = Field1.error or Field2.error or [Field1.text, emp_dict.get(Field2.text)] in pairs
 
                 if But2.disabled:
-                    Error.text="Данный сотрудник уже занимается этим исследованием"
+                    Error.text = "Данный сотрудник уже занимается этим исследованием"
                 else:
-                    Error.text=""
+                    Error.text = ""
             else:
                 But2.disabled = Field1.error or Field2.error
-
 
         Field1 = MDTextField(
             hint_text="Research",
@@ -124,9 +121,8 @@ class ResEmp(MDApp):
         )
 
         def new(instance):
-                SQL.query(SQL.my_cursor, f'INSERT INTO research_employee VALUES (\'{Field1.text}\',{emp_dict.get(Field2.text)})')
-                SQL.mydb.commit()
-                MDApp.get_running_app().stop()
+            SQL.query(f'INSERT INTO research_employee VALUES (\'{Field1.text}\',{emp_dict.get(Field2.text)})')
+            MDApp.get_running_app().stop()
 
         But2 = MDRaisedButton(
             text='Добавить',
